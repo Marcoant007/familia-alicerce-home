@@ -1,0 +1,10 @@
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - bufferutil
+  - core-js
+  - esbuild
+  - prisma
+  - utf-8-validate

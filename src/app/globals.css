@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* Cor de destaque: valor padrão; o layout raiz sobrescreve com SiteSettings.accentColor */
+:root {
+  --accent: #FFC53D;
+  --on-accent: #141414;
+
+  /* shadcn/ui (painel) apontando para os tokens da marca */
+  --background: #F0EEE8;
+  --foreground: #141414;
+  --card: #FFFFFF;
+  --card-foreground: #141414;
+  --popover: #FFFFFF;
+  --popover-foreground: #141414;
+  --primary: #141414;
+  --primary-foreground: #FAFAF7;
+  --secondary: #F0EEE8;
+  --secondary-foreground: #141414;
+  --muted: #F0EEE8;
+  --muted-foreground: #55554F;
+  --destructive: #B42318;
+  --border: #E4E2DC;
+  --input: #E4E2DC;
+  --ring: #141414;
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  /* Fonte */
+  --font-sans: var(--font-montserrat), system-ui, sans-serif;
+
+  /* Marca */
+  --color-ink: #141414;
+  --color-ink-2: #262626;
+  --color-ink-line: #333330;
+  --color-paper: #FAFAF7;
+  --color-sand: #F0EEE8;
+  --color-sand-2: #DEDBD3;
+  --color-card: #FFFFFF;
+  --color-line: #E4E2DC;
+  --color-soft: #55554F;
+  --color-soft-dark: #BDBDB8;
+  --color-success: #1F6B45;
+  --color-danger: #B42318;
+
+  /* Destaque dinâmico */
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+
+  /* shadcn */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  html { color-scheme: light; }
+  body { @apply bg-paper text-ink font-sans antialiased; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-ink; }
+}
+
+@layer components {
+  .container-site { @apply mx-auto w-full max-w-[1280px] px-5 xl:px-0; }
+  .eyebrow { @apply flex items-center gap-3 text-[11px] md:text-[13px] font-extrabold uppercase tracking-[3px] md:tracking-[4px]; }
+  .eyebrow::before { content: ""; @apply block h-1 w-6 md:w-8 bg-accent; }
+  .h-display { @apply text-4xl md:text-[72px] font-black uppercase leading-[1.02] md:leading-none tracking-[-1px]; }
+  .h-section { @apply text-[22px] md:text-5xl font-black uppercase leading-[1.1] tracking-[-0.5px]; }
+  .label-caps { @apply text-[11px] md:text-xs font-extrabold uppercase tracking-[3px]; }
+  .link-more { @apply font-extrabold border-b-[3px] border-accent pb-1 no-underline; }
+}

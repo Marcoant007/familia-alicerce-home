@@ -1,0 +1,313 @@
+// =====================================================================
+// Família Alicerce — schema Prisma (Postgres)
+// Prisma ORM 7: a URL do banco fica em prisma7.config.ts, não aqui.
+// Usuários e login ficam no Clerk; aqui guardamos só o papel de cada
+// pessoa da equipe (StaffMember), ligado pelo clerkUserId.
+// =====================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  MIDIA
+  LIDER
+
+  @@map("role")
+}
+
+enum ContentStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+
+  @@map("content_status")
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  PUBLISH
+  UNPUBLISH
+  SUBMIT      // líder envia para aprovação
+  APPROVE
+  REJECT      // mídia devolve com comentário
+  UPLOAD
+  ROLE_GRANT
+  ROLE_REVOKE
+  SETTINGS_CHANGE
+
+  @@map("audit_action")
+}
+
+enum AuditEntity {
+  EVENT
+  ANNOUNCEMENT
+  ALBUM
+  PHOTO
+  MINISTRY
+  SERVICE
+  SITE_SETTINGS
+  STAFF_MEMBER
+
+  @@map("audit_entity")
+}
+
+// ---------------------------------------------------------------------
+// Equipe (espelho do usuário do Clerk)
+// Login, senha e e-mail ficam no Clerk. Aqui ficam os papéis e o vínculo
+// com o conteúdo e a auditoria. Criado pelo webhook user.created do Clerk
+// (ou no primeiro acesso ao painel); desativado no user.deleted.
+// ---------------------------------------------------------------------
+
+model StaffMember {
+  id          String    @id @default(uuid()) @db.Uuid
+  clerkUserId String    @unique @map("clerk_user_id")
+  name        String
+  email       String    @unique
+  imageUrl    String?   @map("image_url")
+  active      Boolean   @default(true) // false = sem acesso, histórico preservado
+  lastSeenAt  DateTime? @db.Timestamptz(6) @map("last_seen_at")
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6) @map("updated_at")
+
+  roles        StaffRole[] @relation("RoleOwner")
+  rolesGranted StaffRole[] @relation("RoleGrantedBy")
+  auditLogs    AuditLog[]
+
+  events               Event[]        @relation("EventCreatedBy")
+  eventsUpdated        Event[]        @relation("EventUpdatedBy")
+  announcements        Announcement[] @relation("AnnouncementCreatedBy")
+  announcementsUpdated Announcement[] @relation("AnnouncementUpdatedBy")
+  albums               Album[]        @relation("AlbumCreatedBy")
+  photos               Photo[]        @relation("PhotoUploadedBy")
+  settingsUpdates      SiteSettings[] @relation("SettingsUpdatedBy")
+
+  @@map("staff_members")
+}
+
+// Papéis de cada pessoa. Uma pessoa pode ter vários:
+// ex.: MIDIA (geral) + LIDER do ministério Jovens + LIDER do Kids.
+// ministryId só é usado com LIDER; ADMIN e MIDIA ficam com ministryId nulo.
+model StaffRole {
+  id            String       @id @default(uuid()) @db.Uuid
+  role          Role
+  staffMemberId String       @db.Uuid @map("staff_member_id")
+  staffMember   StaffMember  @relation("RoleOwner", fields: [staffMemberId], references: [id], onDelete: Cascade)
+  ministryId    String?      @db.Uuid @map("ministry_id")
+  ministry      Ministry?    @relation(fields: [ministryId], references: [id], onDelete: Cascade)
+  grantedById   String?      @db.Uuid @map("granted_by_id")
+  grantedBy     StaffMember? @relation("RoleGrantedBy", fields: [grantedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  @@unique([staffMemberId, role, ministryId])
+  @@index([ministryId])
+  @@map("staff_roles")
+}
+
+// Auditoria: uma linha por ação no painel. Nunca é editada nem apagada.
+// actorName/entityLabel são cópias do momento da ação, para o histórico
+// continuar legível mesmo se a pessoa ou o item forem removidos.
+model AuditLog {
+  id          String      @id @default(uuid()) @db.Uuid
+  action      AuditAction
+  entityType  AuditEntity @map("entity_type")
+  entityId    String      @map("entity_id") // id do item afetado (texto: aceita uuid ou "1" do SiteSettings)
+  entityLabel String?     @map("entity_label") // ex.: título do evento no momento da ação
+  changes     Json?       // { campo: { from, to } } no UPDATE; snapshot no CREATE/DELETE
+  note        String?     // ex.: comentário da devolução
+
+  actorId      String?      @db.Uuid @map("actor_id")
+  actor        StaffMember? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorClerkId String       @map("actor_clerk_id")
+  actorName    String       @map("actor_name")
+
+  ip        String?
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  @@index([entityType, entityId, createdAt(sort: Desc)])
+  @@index([actorId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------
+// Conteúdo institucional
+// ---------------------------------------------------------------------
+
+// Categorias de eventos/avisos, cadastradas pela equipe (não é texto livre).
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  events        Event[]
+  announcements Announcement[]
+
+  @@map("categories")
+}
+
+model Ministry {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String   @unique
+  description String?
+  schedule    String?  // ex.: "Sábados, 19h"
+  coverPath   String?  @map("cover_path")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  leaders       StaffRole[]
+  events        Event[]
+  announcements Announcement[]
+
+  @@map("ministries")
+}
+
+model Service {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   // ex.: "Culto da Família"
+  weekday   Int      @db.SmallInt // 0 = domingo ... 6 = sábado
+  startsAt  DateTime @db.Time(0) @map("starts_at")
+  sortOrder Int      @default(0) @map("sort_order")
+
+  @@map("services")
+}
+
+// ---------------------------------------------------------------------
+// Agenda e avisos
+// ---------------------------------------------------------------------
+
+model Event {
+  id              String        @id @default(uuid()) @db.Uuid
+  title           String
+  slug            String        @unique
+  description     String?
+  coverPath       String?       @map("cover_path")
+  startsAt        DateTime      @db.Timestamptz(6) @map("starts_at")
+  endsAt          DateTime      @db.Timestamptz(6) @map("ends_at")
+  location        String?
+  registrationUrl String?       @map("registration_url")
+  isFeatured      Boolean       @default(false) @map("is_featured")
+  status          ContentStatus @default(DRAFT)
+  reviewNote      String?       @map("review_note") // motivo da devolução pela mídia
+  publishedAt     DateTime?     @db.Timestamptz(6) @map("published_at")
+
+  categoryId  String?      @db.Uuid @map("category_id")
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  ministryId  String?      @db.Uuid @map("ministry_id")
+  ministry    Ministry?    @relation(fields: [ministryId], references: [id], onDelete: SetNull)
+  createdById String?      @db.Uuid @map("created_by_id")
+  createdBy   StaffMember? @relation("EventCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?      @db.Uuid @map("updated_by_id")
+  updatedBy   StaffMember? @relation("EventUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  albums Album[]
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
+
+  @@index([status, startsAt])
+  @@map("events")
+}
+
+model Announcement {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String
+  body        String?
+  imagePath   String?       @map("image_path")
+  publishAt   DateTime      @default(now()) @db.Timestamptz(6) @map("publish_at")
+  unpublishAt DateTime?     @db.Timestamptz(6) @map("unpublish_at")
+  status      ContentStatus @default(DRAFT)
+  reviewNote  String?       @map("review_note")
+
+  categoryId  String?      @db.Uuid @map("category_id")
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  ministryId  String?      @db.Uuid @map("ministry_id")
+  ministry    Ministry?    @relation(fields: [ministryId], references: [id], onDelete: SetNull)
+  createdById String?      @db.Uuid @map("created_by_id")
+  createdBy   StaffMember? @relation("AnnouncementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?      @db.Uuid @map("updated_by_id")
+  updatedBy   StaffMember? @relation("AnnouncementUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt DateTime @updatedAt @db.Timestamptz(6) @map("updated_at")
+
+  @@index([status, publishAt])
+  @@map("announcements")
+}
+
+// ---------------------------------------------------------------------
+// Galeria
+// ---------------------------------------------------------------------
+
+model Album {
+  id        String    @id @default(uuid()) @db.Uuid
+  title     String
+  slug      String    @unique
+  takenOn   DateTime? @db.Date @map("taken_on")
+  coverPath String?   @map("cover_path")
+
+  eventId     String?      @db.Uuid @map("event_id")
+  event       Event?       @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  createdById String?      @db.Uuid @map("created_by_id")
+  createdBy   StaffMember? @relation("AlbumCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  photos Photo[]
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  @@map("albums")
+}
+
+model Photo {
+  id        String  @id @default(uuid()) @db.Uuid
+  path      String
+  caption   String?
+  sortOrder Int     @default(0) @map("sort_order")
+
+  albumId      String       @db.Uuid @map("album_id")
+  album        Album        @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  uploadedById String?      @db.Uuid @map("uploaded_by_id")
+  uploadedBy   StaffMember? @relation("PhotoUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
+
+  @@index([albumId, sortOrder])
+  @@map("photos")
+}
+
+// ---------------------------------------------------------------------
+// Tema e dados da igreja (uma linha só, id = 1)
+// ---------------------------------------------------------------------
+
+model SiteSettings {
+  id          Int     @id @default(1)
+  accentColor String  @default("#FFC53D") @map("accent_color")
+  address     String?
+  mapsUrl     String? @map("maps_url")
+  whatsapp    String?
+  pixKey      String? @map("pix_key")
+  instagram   String?
+  youtube     String?
+
+  updatedById String?      @db.Uuid @map("updated_by_id")
+  updatedBy   StaffMember? @relation("SettingsUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6) @map("updated_at")
+
+  @@map("site_settings")
+}
