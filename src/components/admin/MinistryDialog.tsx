@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import type { Ministry } from "@/generated/prisma/client";
 import { FormField, fieldInputClass } from "@/components/admin/FormField";
 import {
@@ -31,6 +32,7 @@ export function MinistryDialog({
   useEffect(() => {
     if (open && state && !state.error) {
       setOpen(false);
+      toast.success(ministry ? "Ministério atualizado!" : "Ministério criado!");
       router.refresh();
     }
   }, [state, open, router]);

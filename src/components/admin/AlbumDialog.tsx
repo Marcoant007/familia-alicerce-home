@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import type { Event } from "@/generated/prisma/client";
 import { FormField, fieldInputClass } from "@/components/admin/FormField";
 import {
@@ -22,6 +23,7 @@ export function AlbumDialog({ events }: { events: Event[] }) {
   useEffect(() => {
     if (open && state?.id) {
       setOpen(false);
+      toast.success("Álbum criado!");
       router.push(`/backstage/galeria/${state.id}`);
     }
   }, [state, open, router]);

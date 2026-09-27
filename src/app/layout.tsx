@@ -4,11 +4,9 @@ import type { CSSProperties } from "react";
 import { Montserrat } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ptBR } from "@clerk/localizations";
-import { shadcn } from "@clerk/ui/themes";
 import { prisma } from "@/lib/prisma";
 import { accentVars, DEFAULT_ACCENT } from "@/lib/theme";
 import "./globals.css";
-import "@clerk/ui/themes/shadcn.css";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -29,7 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="pt-BR" className={montserrat.variable} style={vars}>
       <body>
-        <ClerkProvider localization={ptBR} appearance={{ theme: shadcn }}>
+        <ClerkProvider localization={ptBR}>
           {children}
         </ClerkProvider>
       </body>
