@@ -305,6 +305,12 @@ model SiteSettings {
   instagram   String?
   youtube     String?
 
+  // Segunda camada de acesso ao /backstage, além do login do Clerk (ver
+  // src/lib/panel-gate.ts). Só o hash fica salvo — o token em texto puro é
+  // mostrado uma única vez, no momento em que o admin gera um novo.
+  panelAccessTokenHash  String?   @map("panel_access_token_hash")
+  panelAccessTokenSetAt DateTime? @db.Timestamptz(6) @map("panel_access_token_set_at")
+
   updatedById String?      @db.Uuid @map("updated_by_id")
   updatedBy   StaffMember? @relation("SettingsUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   updatedAt   DateTime     @updatedAt @db.Timestamptz(6) @map("updated_at")
