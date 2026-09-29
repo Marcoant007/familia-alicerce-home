@@ -91,7 +91,6 @@ model StaffMember {
   announcements        Announcement[] @relation("AnnouncementCreatedBy")
   announcementsUpdated Announcement[] @relation("AnnouncementUpdatedBy")
   albums               Album[]        @relation("AlbumCreatedBy")
-  photos               Photo[]        @relation("PhotoUploadedBy")
   settingsUpdates      SiteSettings[] @relation("SettingsUpdatedBy")
 
   @@map("staff_members")
@@ -255,11 +254,19 @@ model Announcement {
 // Galeria
 // ---------------------------------------------------------------------
 
+// Álbuns não guardam foto nenhuma — a mídia sobe as fotos numa pasta do Google
+// Drive (compartilhada como "qualquer pessoa com o link pode ver") e só cola o
+// link aqui. O site incorpora essa pasta (ver src/lib/google-drive.ts). Existia
+// um upload direto pro Blob antes (modelo Photo, removido) — trocado porque a
+// mídia já teria que subir a mesma foto duas vezes (Drive do time + aqui).
+// coverPath continua sendo upload direto pro Blob (igual Event/Announcement) —
+// é só a capa exibida na listagem, não as fotos do álbum.
 model Album {
   id        String    @id @default(uuid()) @db.Uuid
   title     String
   slug      String    @unique
   takenOn   DateTime? @db.Date @map("taken_on")
+  driveUrl  String?   @map("drive_url")
   coverPath String?   @map("cover_path")
 
   eventId     String?      @db.Uuid @map("event_id")
@@ -267,28 +274,9 @@ model Album {
   createdById String?      @db.Uuid @map("created_by_id")
   createdBy   StaffMember? @relation("AlbumCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
-  photos Photo[]
-
   createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
 
   @@map("albums")
-}
-
-model Photo {
-  id        String  @id @default(uuid()) @db.Uuid
-  path      String
-  caption   String?
-  sortOrder Int     @default(0) @map("sort_order")
-
-  albumId      String       @db.Uuid @map("album_id")
-  album        Album        @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  uploadedById String?      @db.Uuid @map("uploaded_by_id")
-  uploadedBy   StaffMember? @relation("PhotoUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
-
-  @@index([albumId, sortOrder])
-  @@map("photos")
 }
 
 // ---------------------------------------------------------------------

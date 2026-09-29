@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import type { Ministry, StaffRole } from "@/generated/prisma/client";
@@ -36,6 +36,7 @@ export function StaffRolesDialog({
   triggerClassName?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [role, setRole] = useState<string>("");
   const [pendingRevoke, startRevoke] = useTransition();
@@ -45,10 +46,9 @@ export function StaffRolesDialog({
   useEffect(() => {
     if (open && state && !state.error) {
       setRole("");
-      toast.success("Papel concedido!");
-      router.refresh();
+      router.push(`${pathname}?saved=role`);
     }
-  }, [state, open, router]);
+  }, [state, open, router, pathname]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

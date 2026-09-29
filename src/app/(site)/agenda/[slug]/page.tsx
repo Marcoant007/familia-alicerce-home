@@ -6,6 +6,7 @@ import { DateBadge } from "@/components/site/DateBadge";
 import { EventImage } from "@/components/site/EventImage";
 import { getEventBySlug } from "@/lib/queries/events";
 import { formatDateBadge, formatEventMoment } from "@/lib/format";
+import { buildGoogleCalendarUrl } from "@/lib/ics";
 
 export async function generateMetadata({
   params,
@@ -86,11 +87,17 @@ export default async function EventDetailPage({
                 Inscreva-se
               </Button>
             ) : null}
-            <Button variant="outline" render={<a href={`/agenda/${event.slug}/ics`} />}>
+            <Button
+              variant="outline"
+              render={<a href={buildGoogleCalendarUrl(event)} target="_blank" rel="noopener noreferrer" />}
+            >
               <CalendarPlus size={18} strokeWidth={2} aria-hidden="true" />
               Adicionar à agenda
             </Button>
           </div>
+          <a href={`/agenda/${event.slug}/ics`} className="link-more w-fit">
+            Usar outro app de calendário (.ics)
+          </a>
         </div>
       </div>
     </article>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { UserPlus, Settings } from "lucide-react";
 import { getActor, hasRole } from "@/lib/auth-and-audit";
 import { getStaffMembers } from "@/lib/queries/staff";
@@ -9,6 +10,7 @@ import { InviteMemberDialog } from "@/components/admin/InviteMemberDialog";
 import { StaffRolesDialog } from "@/components/admin/StaffRolesDialog";
 import { ToggleActiveButton } from "@/components/admin/ToggleActiveButton";
 import { PanelTokenCard } from "@/components/admin/PanelTokenCard";
+import { SaveSuccessDialog } from "@/components/admin/SaveSuccessDialog";
 
 export const metadata: Metadata = { title: "Equipe" };
 
@@ -28,6 +30,12 @@ export default async function EquipePage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Suspense fallback={null}>
+        <SaveSuccessDialog
+          messages={{ invite: "Convite enviado!", role: "Papel concedido!", active: "Acesso reativado!" }}
+        />
+      </Suspense>
+
       <PanelTokenCard setAt={settings.panelAccessTokenSetAt} />
 
       <div className="flex flex-wrap items-center justify-between gap-4">

@@ -1,8 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { usePathname, useRouter } from "next/navigation";
 import type { Service } from "@/generated/prisma/client";
 import { FormField, fieldInputClass } from "@/components/admin/FormField";
 import {
@@ -33,6 +32,7 @@ export function ServiceDialog({
   triggerClassName?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const action = service ? updateService.bind(null, service.id) : createService;
   const [state, formAction, pending] = useActionState<ServiceActionState, FormData>(action, undefined);
@@ -40,10 +40,9 @@ export function ServiceDialog({
   useEffect(() => {
     if (open && state && !state.error) {
       setOpen(false);
-      toast.success(service ? "Culto atualizado!" : "Culto criado!");
-      router.refresh();
+      router.push(`${pathname}?saved=${service ? "update" : "create"}`);
     }
-  }, [state, open, router]);
+  }, [state, open, router, pathname, service]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

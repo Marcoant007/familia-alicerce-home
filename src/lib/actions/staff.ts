@@ -65,6 +65,7 @@ export async function inviteMember(_prev: StaffActionState, formData: FormData):
   });
 
   revalidatePath("/backstage/equipe");
+  return {};
 }
 
 export async function grantRole(
@@ -111,6 +112,7 @@ export async function grantRole(
   });
 
   revalidatePath("/backstage/equipe");
+  return {};
 }
 
 export async function revokeRole(staffRoleId: string) {

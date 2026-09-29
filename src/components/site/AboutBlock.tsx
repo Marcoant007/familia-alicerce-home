@@ -17,6 +17,7 @@ export function AboutBlock({
           alt="Líder ministrando durante um culto"
           fill
           sizes="(max-width: 768px) calc(100vw - 40px), 45vw"
+          quality={90}
           className="object-cover object-[62%_center]"
         />
       </div>

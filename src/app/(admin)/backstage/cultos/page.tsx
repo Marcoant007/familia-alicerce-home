@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Plus, Pencil } from "lucide-react";
 import { isEditor, getActor } from "@/lib/auth-and-audit";
 import { getServices } from "@/lib/queries/services";
@@ -6,6 +7,7 @@ import { deleteService } from "@/lib/actions/services";
 import { Panel } from "@/components/admin/Panel";
 import { ServiceDialog } from "@/components/admin/ServiceDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { SaveSuccessDialog } from "@/components/admin/SaveSuccessDialog";
 import { WEEKDAY_FULL, formatServiceTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Cultos" };
@@ -20,6 +22,10 @@ export default async function CultosPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Suspense fallback={null}>
+        <SaveSuccessDialog messages={{ create: "Culto criado!", update: "Culto atualizado!" }} />
+      </Suspense>
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-extrabold">Cultos</h1>
         <ServiceDialog

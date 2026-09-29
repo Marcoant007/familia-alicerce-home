@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Lightbox } from "@/components/site/Lightbox";
+import { ExternalLink } from "lucide-react";
 import { getAlbumBySlug } from "@/lib/queries/albums";
+import { driveEmbedUrl, listDriveFolderImages } from "@/lib/google-drive";
+import { DriveGallery } from "@/components/site/DriveGallery";
 
 export async function generateMetadata({
   params,
@@ -18,6 +20,10 @@ export default async function AlbumPage({ params }: { params: Promise<{ slug: st
   const album = await getAlbumBySlug(slug);
   if (!album) notFound();
 
+  const embedUrl = album.driveUrl ? driveEmbedUrl(album.driveUrl) : null;
+  if (!embedUrl) notFound();
+  const images = await listDriveFolderImages(album.driveUrl!);
+
   return (
     <section className="container-site flex flex-col gap-9 py-12 md:py-20">
       <div className="flex flex-col gap-2">
@@ -29,9 +35,25 @@ export default async function AlbumPage({ params }: { params: Promise<{ slug: st
             )}
           </p>
         ) : null}
+        <a
+          href={album.driveUrl!}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex w-fit items-center gap-2 text-sm font-bold text-soft hover:text-ink"
+        >
+          Abrir no Google Drive <ExternalLink size={14} strokeWidth={2} aria-hidden="true" />
+        </a>
       </div>
 
-      <Lightbox photos={album.photos} />
+      {images.length > 0 ? (
+        <DriveGallery images={images} />
+      ) : (
+        <iframe
+          src={embedUrl}
+          title={`Fotos de ${album.title}`}
+          className="h-[75vh] w-full rounded-3xl border border-line"
+        />
+      )}
     </section>
   );
 }

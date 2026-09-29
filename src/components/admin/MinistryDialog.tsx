@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { usePathname, useRouter } from "next/navigation";
 import type { Ministry } from "@/generated/prisma/client";
 import { FormField, fieldInputClass } from "@/components/admin/FormField";
+import { ImageDrop } from "@/components/admin/ImageDrop";
 import {
   Dialog,
   DialogContent,
@@ -25,20 +25,29 @@ export function MinistryDialog({
   triggerClassName?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [coverPath, setCoverPath] = useState<string | null>(ministry?.coverPath ?? null);
   const action = ministry ? updateMinistry.bind(null, ministry.id) : createMinistry;
   const [state, formAction, pending] = useActionState<MinistryActionState, FormData>(action, undefined);
 
   useEffect(() => {
     if (open && state && !state.error) {
       setOpen(false);
-      toast.success(ministry ? "Ministério atualizado!" : "Ministério criado!");
-      router.refresh();
+      router.push(`${pathname}?saved=${ministry ? "update" : "create"}`);
     }
-  }, [state, open, router]);
+  }, [state, open, router, pathname, ministry]);
+
+  function onOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next && !ministry) {
+      // limpa depois da animação de fechar, pra não trocar o conteúdo à vista
+      setTimeout(() => setCoverPath(null), 200);
+    }
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger className={triggerClassName}>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -63,6 +72,9 @@ export function MinistryDialog({
               defaultValue={ministry?.schedule ?? ""}
               className={fieldInputClass()}
             />
+          </FormField>
+          <FormField label="Foto (opcional)">
+            <ImageDrop value={coverPath} name="coverPath" pathPrefix="ministerios" onChange={setCoverPath} />
           </FormField>
           <FormField label="Descrição" htmlFor="description">
             <textarea

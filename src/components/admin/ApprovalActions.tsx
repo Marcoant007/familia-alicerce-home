@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Dialog,
   DialogClose,
@@ -25,6 +25,8 @@ export function ApprovalActions({
 }) {
   const [note, setNote] = useState("");
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <div className="flex flex-wrap gap-3 rounded-2xl border-2 border-accent/40 bg-accent/10 p-5">
@@ -35,7 +37,7 @@ export function ApprovalActions({
         onClick={() =>
           startTransition(async () => {
             await onApprove(entityId);
-            toast.success(`${entityLabel[0].toUpperCase()}${entityLabel.slice(1)} publicado`);
+            router.push(`${pathname}?saved=publish`);
           })
         }
         className="rounded-full bg-accent px-6 py-3 text-[15px] font-extrabold text-on-accent disabled:opacity-50"
@@ -67,7 +69,7 @@ export function ApprovalActions({
               onClick={() =>
                 startTransition(async () => {
                   await onReject(entityId, note);
-                  toast.success(`${entityLabel[0].toUpperCase()}${entityLabel.slice(1)} devolvido`);
+                  router.push(`${pathname}?saved=reject`);
                 })
               }
               className="rounded-full bg-ink px-6 py-3 text-[15px] font-extrabold text-paper disabled:opacity-50"

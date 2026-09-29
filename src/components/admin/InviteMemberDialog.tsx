@@ -1,8 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { usePathname, useRouter } from "next/navigation";
 import type { Ministry } from "@/generated/prisma/client";
 import { FormField, fieldInputClass } from "@/components/admin/FormField";
 import {
@@ -31,6 +30,7 @@ export function InviteMemberDialog({
   triggerClassName?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [roles, setRoles] = useState<string[]>([]);
   const [state, formAction, pending] = useActionState<StaffActionState, FormData>(inviteMember, undefined);
@@ -39,10 +39,9 @@ export function InviteMemberDialog({
     if (open && state && !state.error) {
       setOpen(false);
       setRoles([]);
-      toast.success("Convite enviado!");
-      router.refresh();
+      router.push(`${pathname}?saved=invite`);
     }
-  }, [state, open, router]);
+  }, [state, open, router, pathname]);
 
   function toggleRole(value: string) {
     setRoles((prev) => (prev.includes(value) ? prev.filter((r) => r !== value) : [...prev, value]));

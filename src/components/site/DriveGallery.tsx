@@ -3,34 +3,35 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { driveImageUrl, type DriveImage } from "@/lib/google-drive";
 
-type Photo = { id: string; path: string; caption: string | null };
-
-export function Lightbox({ photos }: { photos: Photo[] }) {
+export function DriveGallery({ images }: { images: DriveImage[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  if (photos.length === 0) {
-    return <p className="text-soft">Nenhuma foto neste álbum ainda.</p>;
+  if (images.length === 0) {
+    return <p className="text-soft">Nenhuma foto encontrada nessa pasta ainda.</p>;
   }
 
-  const current = openIndex !== null ? photos[openIndex] : null;
+  const current = openIndex !== null ? images[openIndex] : null;
 
   return (
     <>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {photos.map((photo, index) => (
+        {images.map((image, index) => (
           <button
-            key={photo.id}
+            key={image.id}
             type="button"
             onClick={() => setOpenIndex(index)}
             className="relative aspect-square overflow-hidden rounded-2xl bg-sand focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             <Image
-              src={photo.path}
-              alt={photo.caption ?? ""}
+              src={driveImageUrl(image.id, 400)}
+              alt={image.name}
               fill
               sizes="(min-width: 768px) 25vw, 50vw"
+              quality={90}
               className="object-cover"
+              unoptimized
             />
           </button>
         ))}
@@ -67,11 +68,17 @@ export function Lightbox({ photos }: { photos: Photo[] }) {
           ) : null}
 
           <div className="relative h-[70vh] w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
-            <Image src={current.path} alt={current.caption ?? ""} fill sizes="100vw" className="object-contain" />
+            <Image
+              src={driveImageUrl(current.id, 1600)}
+              alt={current.name}
+              fill
+              sizes="100vw"
+              className="object-contain"
+              unoptimized
+            />
           </div>
-          {current.caption ? <p className="text-center text-sm text-soft-dark">{current.caption}</p> : null}
 
-          {openIndex! < photos.length - 1 ? (
+          {openIndex! < images.length - 1 ? (
             <button
               type="button"
               aria-label="Próxima foto"

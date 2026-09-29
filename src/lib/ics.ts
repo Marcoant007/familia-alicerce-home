@@ -8,6 +8,17 @@ function escapeText(text: string): string {
   return text.replace(/[,;\\]/g, (m) => `\\${m}`).replace(/\n/g, "\\n");
 }
 
+export function buildGoogleCalendarUrl(event: Event): string {
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: event.title,
+    dates: `${toIcsDate(event.startsAt)}/${toIcsDate(event.endsAt)}`,
+  });
+  if (event.location) params.set("location", event.location);
+  if (event.description) params.set("details", event.description);
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
 export function buildIcs(event: Event): string {
   const lines = [
     "BEGIN:VCALENDAR",

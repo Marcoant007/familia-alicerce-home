@@ -39,6 +39,7 @@ export async function createService(_prev: ServiceActionState, formData: FormDat
 
   revalidatePath("/", "layout");
   revalidatePath("/backstage/cultos");
+  return {};
 }
 
 export async function updateService(
@@ -70,6 +71,7 @@ export async function updateService(
 
   revalidatePath("/", "layout");
   revalidatePath("/backstage/cultos");
+  return {};
 }
 
 export async function deleteService(id: string) {

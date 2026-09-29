@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Plus, Pencil } from "lucide-react";
 import { isEditor, getActor } from "@/lib/auth-and-audit";
 import { getMinistries } from "@/lib/queries/ministries";
@@ -6,6 +7,7 @@ import { deleteMinistry } from "@/lib/actions/ministries";
 import { Panel } from "@/components/admin/Panel";
 import { MinistryDialog } from "@/components/admin/MinistryDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { SaveSuccessDialog } from "@/components/admin/SaveSuccessDialog";
 
 export const metadata: Metadata = { title: "Ministérios" };
 
@@ -19,6 +21,10 @@ export default async function MinisteriosPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Suspense fallback={null}>
+        <SaveSuccessDialog messages={{ create: "Ministério criado!", update: "Ministério atualizado!" }} />
+      </Suspense>
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-extrabold">Ministérios</h1>
         <MinistryDialog

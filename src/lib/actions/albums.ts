@@ -29,6 +29,8 @@ function readForm(formData: FormData) {
     title: String(formData.get("title") ?? ""),
     eventId: String(formData.get("eventId") ?? ""),
     takenOn: String(formData.get("takenOn") ?? ""),
+    coverPath: String(formData.get("coverPath") ?? ""),
+    driveUrl: String(formData.get("driveUrl") ?? ""),
   };
 }
 
@@ -49,6 +51,8 @@ export async function createAlbum(_prev: AlbumActionState, formData: FormData): 
         slug,
         eventId: data.eventId || null,
         takenOn: data.takenOn ?? null,
+        coverPath: data.coverPath || null,
+        driveUrl: data.driveUrl,
         createdById: actor.id,
       },
     });
@@ -73,13 +77,27 @@ export async function updateAlbum(
   if (!parsed.success) return { error: "Confira os campos.", fieldErrors: flatten(parsed.error) };
   const data = parsed.data;
 
+  let oldCoverPath: string | null = null;
+
   await prisma.$transaction(async (tx) => {
     const before = await tx.album.findUniqueOrThrow({ where: { id } });
     const slug = data.title !== before.title ? await uniqueSlug(data.title, id) : before.slug;
     const after = await tx.album.update({
       where: { id },
-      data: { title: data.title, slug, eventId: data.eventId || null, takenOn: data.takenOn ?? null },
+      data: {
+        title: data.title,
+        slug,
+        eventId: data.eventId || null,
+        takenOn: data.takenOn ?? null,
+        coverPath: data.coverPath || null,
+        driveUrl: data.driveUrl,
+      },
     });
+
+    if (before.coverPath && before.coverPath !== after.coverPath) {
+      oldCoverPath = before.coverPath;
+    }
+
     await audit(tx, actor, {
       action: "UPDATE",
       entityType: "ALBUM",
@@ -89,98 +107,28 @@ export async function updateAlbum(
     });
   });
 
+  await deleteBlobIfExists(oldCoverPath);
+
   revalidatePath("/", "layout");
   revalidatePath("/backstage/galeria");
+  revalidatePath(`/backstage/galeria/${id}`);
+  return { id };
 }
 
 export async function deleteAlbum(id: string) {
   const actor = await getActor();
   if (!isEditor(actor)) throw new Error("Só a mídia/admin remove álbuns.");
 
-  const { before, photoPaths } = await prisma.$transaction(async (tx) => {
-    const albumBefore = await tx.album.findUniqueOrThrow({ where: { id }, include: { photos: true } });
-    await tx.album.delete({ where: { id } }); // cascade remove as fotos
-    await audit(tx, actor, { action: "DELETE", entityType: "ALBUM", entityId: id, entityLabel: albumBefore.title });
-    return { before: albumBefore, photoPaths: albumBefore.photos.map((p) => p.path) };
+  const before = await prisma.$transaction(async (tx) => {
+    const album = await tx.album.findUniqueOrThrow({ where: { id } });
+    await tx.album.delete({ where: { id } });
+    await audit(tx, actor, { action: "DELETE", entityType: "ALBUM", entityId: id, entityLabel: album.title });
+    return album;
   });
 
   await deleteBlobIfExists(before.coverPath);
-  await Promise.all(photoPaths.map((path) => deleteBlobIfExists(path)));
 
   revalidatePath("/", "layout");
-  revalidatePath("/backstage/galeria");
-}
-
-export async function addPhoto(albumId: string, path: string, caption?: string) {
-  const actor = await getActor();
-
-  const photo = await prisma.$transaction(async (tx) => {
-    const last = await tx.photo.findFirst({ where: { albumId }, orderBy: { sortOrder: "desc" } });
-    const created = await tx.photo.create({
-      data: { albumId, path, caption: caption || null, sortOrder: (last?.sortOrder ?? -1) + 1, uploadedById: actor.id },
-    });
-    await audit(tx, actor, { action: "UPLOAD", entityType: "PHOTO", entityId: created.id, entityLabel: caption ?? null });
-
-    const album = await tx.album.findUniqueOrThrow({ where: { id: albumId } });
-    if (!album.coverPath) {
-      await tx.album.update({ where: { id: albumId }, data: { coverPath: path } });
-    }
-    return created;
-  });
-
-  revalidatePath("/", "layout");
-  revalidatePath(`/backstage/galeria/${albumId}`);
-  return photo;
-}
-
-export async function deletePhoto(photoId: string) {
-  const actor = await getActor();
-
-  const { photo, albumId } = await prisma.$transaction(async (tx) => {
-    const found = await tx.photo.findUniqueOrThrow({ where: { id: photoId } });
-    if (!isEditor(actor) && found.uploadedById !== actor.id) {
-      throw new Error("Você só pode remover fotos que você mesmo subiu.");
-    }
-    await tx.photo.delete({ where: { id: photoId } });
-    await audit(tx, actor, { action: "DELETE", entityType: "PHOTO", entityId: photoId, entityLabel: found.caption });
-
-    const album = await tx.album.findUniqueOrThrow({ where: { id: found.albumId } });
-    if (album.coverPath === found.path) {
-      const nextCover = await tx.photo.findFirst({ where: { albumId: found.albumId }, orderBy: { sortOrder: "asc" } });
-      await tx.album.update({ where: { id: found.albumId }, data: { coverPath: nextCover?.path ?? null } });
-    }
-    return { photo: found, albumId: found.albumId };
-  });
-
-  await deleteBlobIfExists(photo.path);
-
-  revalidatePath("/", "layout");
-  revalidatePath(`/backstage/galeria/${albumId}`);
-}
-
-export async function reorderPhotos(albumId: string, orderedIds: string[]) {
-  const actor = await getActor();
-  await prisma.$transaction(async (tx) => {
-    await Promise.all(orderedIds.map((id, index) => tx.photo.update({ where: { id }, data: { sortOrder: index } })));
-    await audit(tx, actor, {
-      action: "UPDATE",
-      entityType: "ALBUM",
-      entityId: albumId,
-      entityLabel: "ordem das fotos",
-    });
-  });
-  revalidatePath(`/backstage/galeria/${albumId}`);
-  revalidatePath("/", "layout");
-}
-
-export async function setCoverPhoto(albumId: string, path: string) {
-  const actor = await getActor();
-  await prisma.$transaction(async (tx) => {
-    await tx.album.update({ where: { id: albumId }, data: { coverPath: path } });
-    await audit(tx, actor, { action: "UPDATE", entityType: "ALBUM", entityId: albumId, entityLabel: "capa do álbum" });
-  });
-  revalidatePath("/", "layout");
-  revalidatePath(`/backstage/galeria/${albumId}`);
   revalidatePath("/backstage/galeria");
 }
 

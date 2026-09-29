@@ -30,6 +30,7 @@ export function NoticeCard({
             alt=""
             fill
             sizes={compact ? "80px" : "200px"}
+            quality={90}
             className="object-cover"
           />
         ) : null}

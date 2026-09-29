@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -26,6 +26,7 @@ export function ToggleActiveButton({
   isSelf?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [pending, startTransition] = useTransition();
 
   if (active && isSelf) {
@@ -36,8 +37,12 @@ export function ToggleActiveButton({
     startTransition(async () => {
       try {
         await toggleStaffActive(staffMemberId, nextActive);
-        toast.success(nextActive ? "Acesso reativado" : "Acesso desativado");
-        router.refresh();
+        if (nextActive) {
+          router.push(`${pathname}?saved=active`);
+        } else {
+          toast.success("Acesso desativado");
+          router.refresh();
+        }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Não deu pra atualizar o acesso.");
       }

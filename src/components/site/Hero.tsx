@@ -36,6 +36,7 @@ export function Hero({
             alt="Culto da Família Alicerce"
             fill
             sizes="(min-width: 768px) 480px, 100vw"
+            quality={90}
             className="object-cover"
             priority
           />

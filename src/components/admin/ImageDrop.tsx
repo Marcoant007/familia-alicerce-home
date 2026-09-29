@@ -56,7 +56,7 @@ export function ImageDrop({
 
       {value ? (
         <div className="relative h-27.5 w-full overflow-hidden rounded-2xl border-2 border-line bg-sand">
-          <Image src={value} alt="" fill sizes="400px" className="object-cover" />
+          <Image src={value} alt="" fill sizes="400px" quality={90} className="object-cover" />
           <button
             type="button"
             onClick={() => onChange(null)}

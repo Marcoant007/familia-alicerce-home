@@ -25,6 +25,7 @@ function readForm(formData: FormData) {
     name: String(formData.get("name") ?? ""),
     description: String(formData.get("description") ?? ""),
     schedule: String(formData.get("schedule") ?? ""),
+    coverPath: String(formData.get("coverPath") ?? ""),
     sortOrder: String(formData.get("sortOrder") ?? "0"),
   };
 }
@@ -41,13 +42,21 @@ export async function createMinistry(_prev: MinistryActionState, formData: FormD
 
   await prisma.$transaction(async (tx) => {
     const created = await tx.ministry.create({
-      data: { name: data.name, slug, description: data.description || null, schedule: data.schedule || null, sortOrder: data.sortOrder },
+      data: {
+        name: data.name,
+        slug,
+        description: data.description || null,
+        schedule: data.schedule || null,
+        coverPath: data.coverPath || null,
+        sortOrder: data.sortOrder,
+      },
     });
     await audit(tx, actor, { action: "CREATE", entityType: "MINISTRY", entityId: created.id, entityLabel: created.name });
   });
 
   revalidatePath("/", "layout");
   revalidatePath("/backstage/ministerios");
+  return {};
 }
 
 export async function updateMinistry(
@@ -67,7 +76,14 @@ export async function updateMinistry(
     const slug = data.name !== before.name ? await uniqueSlug(data.name, id) : before.slug;
     const after = await tx.ministry.update({
       where: { id },
-      data: { name: data.name, slug, description: data.description || null, schedule: data.schedule || null, sortOrder: data.sortOrder },
+      data: {
+        name: data.name,
+        slug,
+        description: data.description || null,
+        schedule: data.schedule || null,
+        coverPath: data.coverPath || null,
+        sortOrder: data.sortOrder,
+      },
     });
     await audit(tx, actor, {
       action: "UPDATE",
@@ -80,6 +96,7 @@ export async function updateMinistry(
 
   revalidatePath("/", "layout");
   revalidatePath("/backstage/ministerios");
+  return {};
 }
 
 export async function deleteMinistry(id: string) {

@@ -20,5 +20,5 @@ export function EventImage({ event, sizes = "100vw" }: { event: EventImageData; 
     return <span className="px-4 text-center">{event.title}</span>;
   }
 
-  return <Image src={src} alt="" fill sizes={sizes} className="object-cover object-center" />;
+  return <Image src={src} alt="" fill sizes={sizes} quality={90} className="object-cover object-center" />;
 }

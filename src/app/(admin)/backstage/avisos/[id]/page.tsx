@@ -37,7 +37,14 @@ export default async function EditarAvisoPage({ params }: { params: Promise<{ id
   return (
     <div className="flex flex-col gap-6">
       <Suspense fallback={null}>
-        <SaveSuccessDialog messages={{ draft: "Rascunho salvo!", submit: "Enviado para aprovação!" }} />
+        <SaveSuccessDialog
+          messages={{
+            draft: "Rascunho salvo!",
+            submit: "Enviado para aprovação!",
+            publish: "Aviso publicado!",
+            reject: "Aviso devolvido!",
+          }}
+        />
       </Suspense>
 
       <div className="flex flex-wrap items-center justify-between gap-4">

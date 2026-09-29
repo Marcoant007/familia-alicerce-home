@@ -71,14 +71,22 @@ describe("ministrySchema", () => {
 });
 
 describe("albumSchema", () => {
+    const driveUrl = "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrSt?usp=sharing";
+
     it("allows blank optional form values", () => {
-        const album = albumSchema.parse({ title: "Conferência", eventId: "", takenOn: "" });
+        const album = albumSchema.parse({ title: "Conferência", eventId: "", takenOn: "", driveUrl });
 
         expect(album.eventId).toBe("");
         expect(album.takenOn).toBeUndefined();
     });
 
     it("rejects a non-UUID event id", () => {
-        expect(albumSchema.safeParse({ title: "Conferência", eventId: "not-an-id" }).success).toBe(false);
+        expect(albumSchema.safeParse({ title: "Conferência", eventId: "not-an-id", driveUrl }).success).toBe(false);
+    });
+
+    it("rejects a link that isn't a Google Drive folder", () => {
+        expect(albumSchema.safeParse({ title: "Conferência", driveUrl: "https://example.com/fotos" }).success).toBe(
+            false
+        );
     });
 });

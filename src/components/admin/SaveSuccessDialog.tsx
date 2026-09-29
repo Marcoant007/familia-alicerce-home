@@ -9,6 +9,7 @@ const DEFAULT_MESSAGES: Record<string, string> = {
   publish: "Publicado!",
   draft: "Rascunho salvo!",
   submit: "Enviado para aprovação!",
+  reject: "Devolvido!",
 };
 
 /** Lê ?saved=publish|draft|submit na URL e mostra a confirmação — depois limpa o parâmetro. */

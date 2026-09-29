@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Eyebrow } from "@/components/site/Eyebrow";
 import { AlbumCard } from "@/components/site/AlbumCard";
-import { getAlbums } from "@/lib/queries/albums";
+import { getPublicAlbums } from "@/lib/queries/albums";
 
 export const metadata: Metadata = { title: "Galeria" };
 
 export default async function GaleriaPage() {
-  const albums = await getAlbums();
+  const albums = await getPublicAlbums();
 
   return (
     <section className="container-site flex flex-col gap-9 py-12 md:py-20">
@@ -23,7 +23,7 @@ export default async function GaleriaPage() {
               slug={album.slug}
               title={album.title}
               takenOn={album.takenOn}
-              photoCount={album._count.photos}
+              coverPath={album.coverPath}
             />
           ))}
         </div>

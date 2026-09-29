@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { href: "/agenda", label: "Agenda" },
   { href: "/avisos", label: "Avisos" },
   { href: "/ministerios", label: "Ministérios" },
+  { href: "/galeria", label: "Galeria" },
   { href: "/contribua", label: "Contribua" },
   { href: "/backstage", label: "Área da equipe" },
 ];
