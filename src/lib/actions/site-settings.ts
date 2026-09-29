@@ -21,6 +21,9 @@ function readForm(formData: FormData) {
     pixKey: String(formData.get("pixKey") ?? ""),
     instagram: String(formData.get("instagram") ?? ""),
     youtube: String(formData.get("youtube") ?? ""),
+    liveVideoUrl: String(formData.get("liveVideoUrl") ?? ""),
+    liveAudioUrl: String(formData.get("liveAudioUrl") ?? ""),
+    liveAt: String(formData.get("liveAt") ?? ""),
   };
 }
 
@@ -52,6 +55,9 @@ export async function updateSiteSettings(
         pixKey: data.pixKey || null,
         instagram: data.instagram || null,
         youtube: data.youtube || null,
+        liveVideoUrl: data.liveVideoUrl || null,
+        liveAudioUrl: data.liveAudioUrl || null,
+        liveAt: data.liveAt,
         updatedBy: { connect: { id: actor.id } },
       },
     });

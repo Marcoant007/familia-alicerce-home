@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { Montserrat } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ptBR } from "@clerk/localizations";
 import { prisma } from "@/lib/prisma";
@@ -30,6 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ClerkProvider localization={ptBR}>
           {children}
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );

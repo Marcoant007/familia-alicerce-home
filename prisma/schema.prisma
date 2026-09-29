@@ -166,6 +166,7 @@ model Ministry {
   slug        String   @unique
   description String?
   schedule    String?  // ex.: "Sábados, 19h"
+  whatsapp    String?  // ex.: "5527999999999", pro botão wa.me do líder
   coverPath   String?  @map("cover_path")
   sortOrder   Int      @default(0) @map("sort_order")
   createdAt   DateTime @default(now()) @db.Timestamptz(6) @map("created_at")
@@ -292,6 +293,12 @@ model SiteSettings {
   pixKey      String? @map("pix_key")
   instagram   String?
   youtube     String?
+
+  // Culto ao vivo em destaque na Home (FA-19/FA-20) — link colado manualmente
+  // toda semana no painel, não integração de API.
+  liveVideoUrl String?   @map("live_video_url")
+  liveAudioUrl String?   @map("live_audio_url")
+  liveAt       DateTime? @db.Timestamptz(6) @map("live_at")
 
   // Segunda camada de acesso ao /backstage, além do login do Clerk (ver
   // src/lib/panel-gate.ts). Só o hash fica salvo — o token em texto puro é

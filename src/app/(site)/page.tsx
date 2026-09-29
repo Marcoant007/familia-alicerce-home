@@ -1,5 +1,6 @@
 import { Hero } from "@/components/site/Hero";
 import { ServiceStrip } from "@/components/site/ServiceStrip";
+import { LiveBlock } from "@/components/site/LiveBlock";
 import { SectionHeader } from "@/components/site/SectionHeader";
 import { EventCard } from "@/components/site/EventCard";
 import { NoticeCard } from "@/components/site/NoticeCard";
@@ -33,6 +34,12 @@ export default async function Home() {
       />
 
       <ServiceStrip services={services} />
+
+      {settings.liveVideoUrl ? (
+        <section className="pt-12 md:pt-28">
+          <LiveBlock videoUrl={settings.liveVideoUrl} audioUrl={settings.liveAudioUrl} liveAt={settings.liveAt} />
+        </section>
+      ) : null}
 
       <section className="container-site flex flex-col gap-9 pt-12 md:pt-28">
         <SectionHeader eyebrow="Agenda" title="Próximos eventos" linkHref="/agenda" linkLabel="Ver agenda completa" />

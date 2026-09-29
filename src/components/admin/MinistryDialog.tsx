@@ -76,6 +76,15 @@ export function MinistryDialog({
           <FormField label="Foto (opcional)">
             <ImageDrop value={coverPath} name="coverPath" pathPrefix="ministerios" onChange={setCoverPath} />
           </FormField>
+          <FormField label="WhatsApp do líder (opcional)" htmlFor="whatsapp" error={state?.fieldErrors?.whatsapp}>
+            <input
+              id="whatsapp"
+              name="whatsapp"
+              placeholder="5527999999999"
+              defaultValue={ministry?.whatsapp ?? ""}
+              className={fieldInputClass(!!state?.fieldErrors?.whatsapp)}
+            />
+          </FormField>
           <FormField label="Descrição" htmlFor="description">
             <textarea
               id="description"

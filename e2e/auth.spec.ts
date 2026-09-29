@@ -70,6 +70,26 @@ test.describe("sessão autenticada", () => {
 
     await page.goto("/backstage");
     await expect(page).toHaveURL("/backstage");
+
+    // Segunda camada além do Clerk (src/lib/panel-gate.ts): se algum admin já
+    // gerou um token em /backstage/equipe, essa tela aparece antes do painel.
+    // Sem token gerado ainda no banco, `checkPanelToken` libera qualquer valor
+    // não vazio — por isso o fallback abaixo funciona no ambiente de dev/e2e
+    // "limpo"; se um token real já foi gerado, defina E2E_PANEL_TOKEN.
+    const tokenInput = page.getByPlaceholder("Token de acesso");
+    if (await tokenInput.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await tokenInput.fill(process.env.E2E_PANEL_TOKEN ?? "e2e-test-token");
+      await page.getByRole("button", { name: "Entrar" }).click();
+
+      const wrongToken = page.getByText("Token incorreto.");
+      const painel = page.getByText("Painel da equipe");
+      await expect(wrongToken.or(painel)).toBeVisible();
+      test.skip(
+        await wrongToken.isVisible(),
+        "há um token de acesso ao painel já configurado nesse banco — defina E2E_PANEL_TOKEN no .env.local com o valor correto"
+      );
+    }
+
     await expect(page.getByText("Painel da equipe")).toBeVisible();
 
     expect(errors, `Erros de JS na página: ${errors.join("\n")}`).toEqual([]);

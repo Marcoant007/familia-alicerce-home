@@ -9,6 +9,12 @@ import { ThemePreview } from "@/components/admin/ThemePreview";
 import { DEFAULT_ACCENT } from "@/lib/theme";
 import { updateSiteSettings, type SiteSettingsActionState } from "@/lib/actions/site-settings";
 
+function toDateTimeLocal(date: Date | null | undefined) {
+  if (!date) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export function AparenciaForm({ settings }: { settings: SiteSettings }) {
   const router = useRouter();
   const [intent, setIntent] = useState<"apply" | "reset">("apply");
@@ -87,6 +93,43 @@ export function AparenciaForm({ settings }: { settings: SiteSettings }) {
               placeholder="https://youtube.com/@..."
               defaultValue={settings.youtube ?? ""}
               className={fieldInputClass(!!state?.fieldErrors?.youtube)}
+            />
+          </FormField>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-extrabold">Culto ao vivo em destaque</h2>
+          <p className="text-sm text-soft">
+            Cole o link do culto de domingo toda semana — aparece em destaque na Home. Sem link, a seção não
+            aparece.
+          </p>
+          <FormField label="Link do YouTube" htmlFor="liveVideoUrl" error={state?.fieldErrors?.liveVideoUrl}>
+            <input
+              id="liveVideoUrl"
+              name="liveVideoUrl"
+              type="url"
+              placeholder="https://youtube.com/watch?v=..."
+              defaultValue={settings.liveVideoUrl ?? ""}
+              className={fieldInputClass(!!state?.fieldErrors?.liveVideoUrl)}
+            />
+          </FormField>
+          <FormField label="Link do Spotify (opcional)" htmlFor="liveAudioUrl" error={state?.fieldErrors?.liveAudioUrl}>
+            <input
+              id="liveAudioUrl"
+              name="liveAudioUrl"
+              type="url"
+              placeholder="https://open.spotify.com/episode/..."
+              defaultValue={settings.liveAudioUrl ?? ""}
+              className={fieldInputClass(!!state?.fieldErrors?.liveAudioUrl)}
+            />
+          </FormField>
+          <FormField label="Data do culto" htmlFor="liveAt" error={state?.fieldErrors?.liveAt}>
+            <input
+              id="liveAt"
+              name="liveAt"
+              type="datetime-local"
+              defaultValue={toDateTimeLocal(settings.liveAt)}
+              className={fieldInputClass(!!state?.fieldErrors?.liveAt)}
             />
           </FormField>
         </section>
