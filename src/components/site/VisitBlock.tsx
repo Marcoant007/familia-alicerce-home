@@ -39,7 +39,7 @@ export function VisitBlock({
       <div className="min-h-70 bg-ink-2 md:min-h-105">
         {address ? (
           <iframe
-            title="Mapa até a Família Alicerce"
+            title="Mapa até o endereço"
             src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`}
             className="h-full min-h-70 w-full border-0 grayscale md:min-h-105"
             loading="lazy"

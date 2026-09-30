@@ -7,6 +7,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { ptBR } from "@clerk/localizations";
 import { prisma } from "@/lib/prisma";
 import { accentVars, DEFAULT_ACCENT } from "@/lib/theme";
+import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/site-config";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -17,8 +18,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Família Alicerce", template: "%s · Família Alicerce" },
-  description: "Uma casa firme, de portas abertas. Igreja Família Alicerce em Vitória – ES.",
+  title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

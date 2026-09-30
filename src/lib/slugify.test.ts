@@ -11,7 +11,7 @@ describe("slugify", () => {
   });
 
   it("removes leading and trailing separators", () => {
-    expect(slugify("---Família Alicerce---")).toBe("familia-alicerce");
+    expect(slugify("---Grupo de Jovens---")).toBe("grupo-de-jovens");
   });
 
   it("returns an empty slug when the input has no letters or numbers", () => {

@@ -1,19 +1,33 @@
-import Image from "next/image";
 import { cn } from "cn";
+import { SITE_NAME } from "@/lib/site-config";
 
 /**
- * Ícone da marca + "Família Alicerce" como texto de verdade.
- * O arquivo public/brand/logo-branca.png tem o texto embutido em resolução
- * baixa (ilegível abaixo de ~150px) — por isso usamos só o ícone recortado
- * (public/brand/icon-branca.png) e escrevemos o nome como HTML, sempre nítido.
+ * Marca placeholder deste boilerplate: um monograma com a inicial de
+ * SITE_NAME. Troque por um ícone/imagem de verdade ao adaptar o template.
  */
+export function LogoMark({ onDark = false, className }: { onDark?: boolean; className?: string }) {
+  const initial = SITE_NAME.trim().charAt(0).toUpperCase() || "•";
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex aspect-square h-8 shrink-0 items-center justify-center rounded-lg text-sm font-black",
+        onDark ? "bg-paper text-ink" : "bg-ink text-paper",
+        className
+      )}
+    >
+      {initial}
+    </span>
+  );
+}
+
 export function Logo({
   onDark = false,
   iconClassName,
   textClassName,
   className,
 }: {
-  /** true quando o fundo é escuro (ink) e o ícone já pode ficar branco */
+  /** true quando o fundo é escuro (ink) e a marca já pode ficar clara */
   onDark?: boolean;
   iconClassName?: string;
   textClassName?: string;
@@ -21,18 +35,8 @@ export function Logo({
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <Image
-        src="/brand/icon-branca.png"
-        alt=""
-        width={98}
-        height={56}
-        className={cn("h-8 w-auto", !onDark && "brightness-0", iconClassName)}
-      />
-      <span className={cn("leading-[0.95] font-black uppercase", textClassName)}>
-        Família
-        <br />
-        Alicerce
-      </span>
+      <LogoMark onDark={onDark} className={iconClassName} />
+      <span className={cn("font-black uppercase", textClassName)}>{SITE_NAME}</span>
     </span>
   );
 }

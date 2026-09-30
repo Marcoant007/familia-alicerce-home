@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getSiteSettings } from "@/lib/queries/site-settings";
+import { SITE_NAME } from "@/lib/site-config";
 
 export async function Footer() {
   const settings = await getSiteSettings();
@@ -7,7 +8,7 @@ export async function Footer() {
   return (
     <footer className="flex flex-col items-center gap-2 border-t border-line px-5 py-10 text-sm text-soft md:flex-row md:justify-between md:px-20">
       <span>
-        © Família Alicerce
+        © {SITE_NAME}
         {settings.instagram ? (
           <>
             {" · "}

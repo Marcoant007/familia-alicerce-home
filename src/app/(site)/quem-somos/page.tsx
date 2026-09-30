@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Eyebrow } from "@/components/site/Eyebrow";
+import { SITE_NAME, SITE_CITY } from "@/lib/site-config";
 
 export const metadata: Metadata = { title: "Quem somos" };
 
@@ -15,9 +16,9 @@ export default function QuemSomosPage() {
         <div className="flex flex-col gap-4">
           <h2 className="text-xl font-extrabold uppercase">Nossa história</h2>
           <p className="text-[17px] leading-[1.65] text-soft">
-            A Família Alicerce nasceu do desejo de construir uma comunidade onde cada
+            {SITE_NAME} nasceu do desejo de construir uma comunidade onde cada
             pessoa encontra acolhimento, propósito e um lugar para crescer na fé —
-            uma casa firme, de portas abertas, para toda família de Vitória e região.
+            uma casa firme, de portas abertas, para toda família de {SITE_CITY} e região.
           </p>
         </div>
         <div className="flex flex-col gap-4">

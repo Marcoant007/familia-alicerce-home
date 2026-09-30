@@ -147,14 +147,14 @@ async function main() {
   await prisma.siteSettings.update({
     where: { id: 1 },
     data: {
-      address: "Rua das Manilhas, 25 - Nova Palestina, Vitória - ES, 29030-000",
+      address: "Rua Exemplo, 123 - Centro, Sua Cidade - UF, 00000-000",
       mapsUrl:
         "https://www.google.com/maps/search/?api=1&query=" +
-        encodeURIComponent("Rua das Manilhas, 25 - Nova Palestina, Vitória - ES, 29030-000"),
-      whatsapp: "+55 27 99999-0000",
-      pixKey: "contato@familiaalicerce.org.br",
-      instagram: "https://instagram.com/familiaalicerce",
-      youtube: "https://youtube.com/@familiaalicerce",
+        encodeURIComponent("Rua Exemplo, 123 - Centro, Sua Cidade - UF, 00000-000"),
+      whatsapp: "+55 00 90000-0000",
+      pixKey: "contato@suaigreja.org.br",
+      instagram: "https://instagram.com/suaigreja",
+      youtube: "https://youtube.com/@suaigreja",
     },
   });
 

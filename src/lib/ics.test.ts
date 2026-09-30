@@ -21,7 +21,7 @@ describe("buildIcs", () => {
     const calendar = buildIcs(createEvent());
 
     expect(calendar).toContain("BEGIN:VCALENDAR\r\n");
-    expect(calendar).toContain("UID:event-123@familiaalicerce");
+    expect(calendar).toContain("UID:event-123@sua-igreja");
     expect(calendar).toContain("DTSTAMP:20260927T120000Z");
     expect(calendar).toContain("DTSTART:20261004T010000Z");
     expect(calendar).toContain("DTEND:20261004T030000Z");

@@ -32,8 +32,8 @@ export function Hero({
         <div className="absolute top-[-24px] right-[-24px] h-40 w-40 rounded-full bg-accent md:top-[-30px] md:right-[-40px] md:h-60 md:w-60" />
         <div className="absolute inset-0 bottom-10 overflow-hidden rounded-3xl bg-ink-2 md:right-10 md:bottom-10 md:rounded-4xl">
           <Image
-            src="/culto-images/pastor.jpg"
-            alt="Culto da Família Alicerce"
+            src="/culto-images/pastor-telmo-martinello-1.jpeg"
+            alt="Culto"
             fill
             sizes="(min-width: 768px) 480px, 100vw"
             quality={90}

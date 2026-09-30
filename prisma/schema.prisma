@@ -1,5 +1,5 @@
 // =====================================================================
-// Família Alicerce — schema Prisma (Postgres)
+// Site da igreja — schema Prisma (Postgres)
 // Prisma ORM 7: a URL do banco fica em prisma7.config.ts, não aqui.
 // Usuários e login ficam no Clerk; aqui guardamos só o papel de cada
 // pessoa da equipe (StaffMember), ligado pelo clerkUserId.

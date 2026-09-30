@@ -1,4 +1,5 @@
 import type { Event } from "@/generated/prisma/client";
+import { SITE_NAME, SITE_SLUG } from "@/lib/site-config";
 
 function toIcsDate(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
@@ -23,10 +24,10 @@ export function buildIcs(event: Event): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Familia Alicerce//Agenda//PT",
+    `PRODID:-//${SITE_NAME}//Agenda//PT`,
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
-    `UID:${event.id}@familiaalicerce`,
+    `UID:${event.id}@${SITE_SLUG}`,
     `DTSTAMP:${toIcsDate(new Date())}`,
     `DTSTART:${toIcsDate(event.startsAt)}`,
     `DTEND:${toIcsDate(event.endsAt)}`,
